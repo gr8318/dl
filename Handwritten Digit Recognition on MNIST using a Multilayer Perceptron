@@ -1,0 +1,40 @@
+#Handwritten Digit Recognition on MNIST using a Multilayer Perceptron
+import tensorflow as tf
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import classification_report, accuracy_score
+import matplotlib.pyplot as plt
+import numpy as np
+
+(X_train, y_train), (X_test, y_test) = tf.keras.datasets.mnist.load_data()
+20
+
+X_train = X_train / 255.0
+X_test = X_test / 255.0
+
+X_train = X_train.reshape(X_train.shape[0], -1)
+X_test = X_test.reshape(X_test.shape[0], -1)
+
+mlp = MLPClassifier(
+ hidden_layer_sizes=(100,),
+ max_iter=10,
+ solver='adam',
+ random_state=42
+)
+
+mlp.fit(X_train, y_train)
+
+y_pred = mlp.predict(X_test)
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
+21
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+fig, axes = plt.subplots(2, 5, figsize=(10, 5))
+axes = axes.ravel()
+for i in range(10):
+ axes[i].imshow(X_test[i].reshape(28, 28), cmap='gray')
+ axes[i].set_title(f'Pred: {y_pred[i]}')
+ axes[i].axis('off')
+plt.tight_layout()
+plt.show()
