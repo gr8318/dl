@@ -1,0 +1,27 @@
+#Image Classification using Pre-Trained VGG16 (Transfer Learning on ImageNet)
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
+from tensorflow.keras.preprocessing import image
+import matplotlib.pyplot as plt
+import numpy as np
+
+model = VGG16(weights='imagenet')
+
+img_path = "/content/OIP (1).jfif"
+try:
+ img = image.load_img(img_path, target_size=(224, 224))
+except FileNotFoundError:
+ print(f"Error: Image file not found at {img_path}")
+ exit()
+x = image.img_to_array(img)
+x = np.expand_dims(x, axis=0)
+x = preprocess_input(x)
+
+preds = model.predict(x, verbose=0)
+
+plt.imshow(img)
+plt.title("Input Image")
+plt.axis('off')
+plt.show()
+
+print('Predicted:', decode_predictions(preds, top=3)[0]) 
