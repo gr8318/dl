@@ -1,0 +1,42 @@
+#Classification of Iris Dataset using a Single Layer Perceptron (SLP) with TensorFlow/Keras
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+import numpy as np
+
+iris = load_iris()
+X, y = iris.data, iris.target 
+
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+encoder = LabelEncoder()
+y = encoder.fit_transform(y)
+
+X_train, X_test, y_train, y_test = train_test_split(
+ X, y, test_size=0.3, random_state=42
+)
+
+model = keras.Sequential([
+ layers.Dense(10, activation='relu', input_shape=(4,)),
+ layers.Dense(3, activation='softmax')
+])
+
+model.compile(
+ optimizer='adam',
+ loss='sparse_categorical_crossentropy',
+ metrics=['accuracy']
+)
+
+history = model.fit(
+ X_train, y_train, 
+  epochs=50,
+ validation_data=(X_test, y_test),
+ verbose=1
+)
+
+test_loss, test_acc = model.evaluate(X_test, y_test, verbose=0)
+print(f"\nTest accuracy: {test_acc:.4f}")
