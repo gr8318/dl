@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 model = VGG16(weights='imagenet')
-
+#Replace this downloaded image location
 img_path = "/content/OIP (1).jfif"
 try:
  img = image.load_img(img_path, target_size=(224, 224))
