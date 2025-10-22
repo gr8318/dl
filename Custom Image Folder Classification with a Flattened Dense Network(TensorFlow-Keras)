@@ -1,0 +1,65 @@
+#Custom Image Folder Classification with a Flattened Dense Network(TensorFlow-Keras)
+import tensorflow as tf
+from tensorflow.keras.preprocessing import image_dataset_from_directory
+from tensorflow.keras.layers import Dense,Softmax
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
+import matplotlib.pyplot as plt
+# !pip install kagglehub
+import kagglehub
+
+path = kagglehub.dataset_download("samuelcortinhas/cats-and-dogs-image-classification")
+print("Path to dataset files:", path)
+img_height, img_width = 32, 32 # Resize all images to same size
+batch_size = 64
+train_dataset = image_dataset_from_directory(
+ f'{path}/train',
+ image_size=(img_height, img_width),
+ batch_size=batch_size,
+ label_mode='int' # gives integer labels
+)
+test_dataset = image_dataset_from_directory(
+ f'{path}/test',
+ image_size=(img_height, img_width),
+ batch_size=batch_size,
+ label_mode='int'
+)
+def flatten_and_normalize(images, labels):
+ images = tf.reshape(images, (tf.shape(images)[0], -1)) / 255.0
+ return images, labels
+train_dataset = train_dataset.map(flatten_and_normalize)
+test_dataset = test_dataset.map(flatten_and_normalize)
+class_names = ["cat","dog"] # Put your class names here
+num_classes = len(class_names)
+input_shape = img_height * img_width * 3 # 3 channels for RGB
+model = Sequential([
+ Dense(512, activation='relu', input_shape=(input_shape,)),
+ Dense(256, activation='relu'),
+ Dense(num_classes)
+])
+model.compile(
+ optimizer='adam',
+ loss=SparseCategoricalCrossentropy(from_logits=True),
+ metrics=['accuracy']
+)
+model.fit(train_dataset, epochs=10, validation_data=test_dataset)
+test_loss, test_acc = model.evaluate(test_dataset)
+print(f"Test accuracy: {test_acc:.2f}")
+probability_model = Sequential([model, Softmax()])
+for images, labels in test_dataset.take(1):
+ predictions = probability_model.predict(images)
+ for i in range(5):
+  print(f"Predicted: {class_names[tf.argmax(predictions[i])]}, True: {class_names[labels[i]]}")
+for images, labels in test_dataset.take(1):
+ predictions = probability_model.predict(images)
+ plt.figure(figsize=(12, 3))
+ for i in range(5):
+  plt.subplot(1, 5, i+1)
+  plt.imshow(images[i].numpy().reshape(img_height, img_width, 3))
+  pred_label = class_names[tf.argmax(predictions[i])]
+  true_label = class_names[labels[i]]
+  color = 'green' if pred_label == true_label else 'red'
+  color = 'green' if pred_label == true_label else 'red'
+  plt.title(pred_label, color=color)
+  plt.axis('off')
+ plt.show()
